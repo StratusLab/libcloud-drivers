@@ -1,0 +1,10 @@
+*~
+*.pyc
+.idea
+build
+dist
+MANIFEST
+target
+
+nosetests.xml
+cloud-test-params.ini

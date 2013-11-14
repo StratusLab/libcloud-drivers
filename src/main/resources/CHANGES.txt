@@ -1,0 +1,10 @@
+v13.05.0, 11 June 2013 -- Reorganize build. Update to Libcloud 0.12.4.
+v0.9, 20 February 2013 -- Update for Libcloud 0.12.1.
+v0.8, 20 February 2013 -- Pin to 0.11.4 because of driver registration changes.
+v0.7, 17 February 2013 -- Add features to allow deploy_node to work.
+v0.6, 16 February 2013 -- Pass in ssh public key.
+v0.5, 15 February 2013 -- Fix VM name handling.
+v0.4, 15 February 2013 -- Make host a dynamic attribute.
+v0.3, 14 February 2013 -- Prototype will all functions 'working'.
+v0.2, 5 February 2013 -- Update classifier information.
+v0.1, 5 February 2013 -- Initial release.
