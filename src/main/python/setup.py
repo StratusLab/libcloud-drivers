@@ -13,7 +13,7 @@ setup(
     packages=['stratuslab', 'stratuslab.libcloud'],
 
     install_requires=[
-        "apache-libcloud ==0.12.4",
+        "apache-libcloud ==0.13.2",
         "stratuslab-client",
         ],
 
