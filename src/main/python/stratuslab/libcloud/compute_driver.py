@@ -37,13 +37,14 @@ import os
 
 from stratuslab.Monitor import Monitor
 from stratuslab.ConfigHolder import ConfigHolder, UserConfigurator
-from stratuslab.PersistentDisk import PersistentDisk
 import stratuslab.Util as StratusLabUtil
 from libcloud.compute.base import NodeImage, NodeSize, Node
 from libcloud.compute.base import NodeAuthSSHKey, NodeDriver
 from libcloud.compute.base import NodeLocation, UuidMixin
 from libcloud.compute.base import StorageVolume
 from libcloud.compute.types import NodeState
+
+from stratuslab.volume_manager.volume_manager_factory import VolumeManagerFactory
 
 from stratuslab.vm_manager.vm_manager import VmManager
 from stratuslab.vm_manager.vm_manager_factory import VmManagerFactory
@@ -624,7 +625,7 @@ class StratusLabNodeDriver(NodeDriver):
 
         config_holder = self._get_config_section(location)
 
-        pdisk = PersistentDisk(config_holder)
+        pdisk = VolumeManagerFactory.create(config_holder)
 
         filters = {}
         volumes = pdisk.describeVolumes(filters)
@@ -659,7 +660,7 @@ class StratusLabNodeDriver(NodeDriver):
         """
         config_holder = self._get_config_section(location)
 
-        pdisk = PersistentDisk(config_holder)
+        pdisk = VolumeManagerFactory.create(config_holder)
 
         # Creates a private disk.  Boolean flag = False means private.
         vol_uuid = pdisk.createVolume(size, name, False)
@@ -678,7 +679,7 @@ class StratusLabNodeDriver(NodeDriver):
         location = self._volume_location(volume)
 
         config_holder = self._get_config_section(location)
-        pdisk = PersistentDisk(config_holder)
+        pdisk = VolumeManagerFactory.create(config_holder)
 
         pdisk.deleteVolume(volume.id)
 
@@ -688,7 +689,7 @@ class StratusLabNodeDriver(NodeDriver):
         location = self._volume_location(volume)
 
         config_holder = self._get_config_section(location)
-        pdisk = PersistentDisk(config_holder)
+        pdisk = VolumeManagerFactory.create(config_holder)
 
         try:
             host = node.host
@@ -709,7 +710,7 @@ class StratusLabNodeDriver(NodeDriver):
         location = self._volume_location(volume)
 
         config_holder = self._get_config_section(location)
-        pdisk = PersistentDisk(config_holder)
+        pdisk = VolumeManagerFactory.create(config_holder)
 
         try:
             node = volume.extra['node']
