@@ -437,7 +437,7 @@ class StratusLabNodeDriver(NodeDriver):
         @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
 
         @return: The newly created node.
-        @rtype: L{Node}
+        @rtype: L{StratusLabNode}
 
         @inherits: L{NodeDriver.create_node}
 
@@ -482,7 +482,11 @@ class StratusLabNodeDriver(NodeDriver):
 
         holder = self._get_config_section(location)
 
-        self._insert_required_run_option_defaults(holder)
+        if auth is None:
+            self._insert_required_run_option_defaults(holder,
+                                                      ['userPublicKeyFile'])
+        else:
+            self._insert_required_run_option_defaults(holder)
 
         holder.set('vmName', name)
 
@@ -513,13 +517,18 @@ class StratusLabNodeDriver(NodeDriver):
 
         return runner
 
-    def _insert_required_run_option_defaults(self, holder):
+    def _insert_required_run_option_defaults(self, holder, options=None):
         defaults = VmManager.defaultRunOptions()
 
         defaults['verboseLevel'] = -1
         required_options = ['verboseLevel', 'vmTemplateFile',
                             'marketplaceEndpoint', 'vmRequirements',
                             'outVmIdsFile', 'inVmIdsFile', 'vncPort']
+
+        if options is not None:
+            for option in options:
+                if option not in required_options and option in defaults:
+                    required_options.append(option)
 
         for option in required_options:
             if not holder.config.get(option):
@@ -735,6 +744,69 @@ class StratusLabNodeDriver(NodeDriver):
             return volume.extra['location']
         except KeyError:
             return self.default_location
+
+    def deploy_node(self, **kwargs):
+        """
+        Create a new node, and start deployment.
+
+        @keyword    deploy: Deployment to run once machine is online and
+                            availble to SSH.
+        @type       deploy: L{Deployment}
+
+        @keyword    ssh_username: Optional name of the account which is used
+                                  when connecting to
+                                  SSH server (default is root)
+        @type       ssh_username: C{str}
+
+        @keyword    ssh_alternate_usernames: Optional list of ssh usernames to
+                                             try to connect with if using the
+                                             default one fails
+        @type       ssh_alternate_usernames: C{list}
+
+        @keyword    ssh_port: Optional SSH server port (default is 22)
+        @type       ssh_port: C{int}
+
+        @keyword    ssh_timeout: Optional SSH connection timeout in seconds
+                                 (default is 10)
+        @type       ssh_timeout: C{float}
+
+        @keyword    auth:   Initial authentication information for the node
+                            (optional)
+        @type       auth:   L{NodeAuthSSHKey} or L{NodeAuthPassword}
+
+        @keyword    ssh_key: A path (or paths) to an SSH private key with which
+                             to attempt to authenticate. (optional)
+        @type       ssh_key: C{str} or C{list} of C{str}
+
+        @keyword    timeout: How many seconds to wait before timing out.
+                             (default is 600)
+        @type       timeout: C{int}
+
+        @keyword    max_tries: How many times to retry if a deployment fails
+                               before giving up (default is 3)
+        @type       max_tries: C{int}
+
+        @keyword    ssh_interface: The interface to wait for. Default is
+                                   'public_ips', other option is 'private_ips'.
+        @type       ssh_interface: C{str}
+
+        @return: The newly created and deployed node.
+        @rtype: L{StratusLabNode}
+
+        @inherits: L{NodeDriver.deploy_node}
+        """
+        
+        if 'ssh_key' not in kwargs:
+            location = kwargs.get('location', self.default_location)
+            holder = self._get_config_section(location)
+            if hasattr(holder, 'userPrivateKeyFile'):
+                kwargs['ssh_key'] = getattr(holder, 'userPrivateKeyFile')
+            else:
+                defaults = VmManager.defaultRunOptions()
+                if 'userPrivateKeyFile' in defaults:
+                    kwargs['ssh_key'] = defaults.get('userPrivateKeyFile')
+
+        return super(StratusLabNodeDriver, self).deploy_node(**kwargs)
 
 
 pass
